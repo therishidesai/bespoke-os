@@ -1,12 +1,12 @@
 #include "kernel/types.h"
 #include "user/user.h"
 
-void prime_proc(int rx) {
+void prime_proc(int parent_fd) {
   int p[2];
   pipe(p);
   int c_start;
-  if ((read(rx, &c_start, sizeof(int)) == 0)) {
-    close(rx);
+  if ((read(parent_fd, &c_start, sizeof(int)) == 0)) {
+    close(parent_fd);
     return;
   }
   printf("prime %d\n", c_start);
@@ -18,13 +18,13 @@ void prime_proc(int rx) {
   } else if (pid > 0) {
     close(p[0]);
     int val;
-    while (read(rx, &val, sizeof(int)) != 0) {
+    while (read(parent_fd, &val, sizeof(int)) != 0) {
       if ((val % c_start) != 0) {
         write(p[1], &val, sizeof(int));
       }
     }
 
-    close(rx);
+    close(parent_fd);
     close(p[1]);
     wait((int*) 0);
   } else {
